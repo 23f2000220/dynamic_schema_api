@@ -48,14 +48,13 @@ class ExtractRequest(BaseModel):
     schema: Dict[str, str]
 
 
- 
 def build_prompt(text: str, schema: Dict[str, str]) -> str:
     schema_desc = "\n".join(f'- "{k}": {v}' for k, v in schema.items())
     return f"""Extract the following fields from the text below. Respond with ONLY a raw JSON object, no markdown fences, no commentary.
- 
+
 Fields to extract (name: type):
 {schema_desc}
- 
+
 Rules:
 - Output JSON must contain EXACTLY these keys, nothing more, nothing less.
 - If a field cannot be found in the text, use null.
@@ -70,12 +69,11 @@ Rules:
   person's name, not their name plus a title or ID. Strip labels, account
   numbers, prefixes/suffixes, and any other context that isn't part of the
   entity a reasonable person would say when asked just for that field.
- 
+
 Text:
 \"\"\"{text}\"\"\"
- 
+
 Return only the JSON object."""
- 
 
 
 def coerce_value(value: Any, field_type: str) -> Any:
