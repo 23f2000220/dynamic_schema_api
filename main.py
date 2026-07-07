@@ -48,25 +48,34 @@ class ExtractRequest(BaseModel):
     schema: Dict[str, str]
 
 
+ 
 def build_prompt(text: str, schema: Dict[str, str]) -> str:
     schema_desc = "\n".join(f'- "{k}": {v}' for k, v in schema.items())
     return f"""Extract the following fields from the text below. Respond with ONLY a raw JSON object, no markdown fences, no commentary.
-
+ 
 Fields to extract (name: type):
 {schema_desc}
-
+ 
 Rules:
 - Output JSON must contain EXACTLY these keys, nothing more, nothing less.
 - If a field cannot be found in the text, use null.
 - "date" fields must be formatted as YYYY-MM-DD.
 - "integer" fields must be whole numbers (no quotes, no units).
 - "float" fields must be numbers (no currency symbols, no quotes).
-- "string" fields are plain text (no quotes escaping issues).
-
+- "string" fields must contain ONLY the atomic entity itself, not surrounding
+  context. Extract the minimal, specific value implied by the field name.
+  For example, a field named "bank" or "from_bank" should contain just the
+  bank's name (e.g. "HDFC"), not "HDFC Acct 7890" or "HDFC Bank account
+  ending 7890". A field named "customer_name" should contain just the
+  person's name, not their name plus a title or ID. Strip labels, account
+  numbers, prefixes/suffixes, and any other context that isn't part of the
+  entity a reasonable person would say when asked just for that field.
+ 
 Text:
 \"\"\"{text}\"\"\"
-
+ 
 Return only the JSON object."""
+ 
 
 
 def coerce_value(value: Any, field_type: str) -> Any:
